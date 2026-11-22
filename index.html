@@ -10,427 +10,13 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-
+  <link rel="stylesheet" href="styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-
-  <style>
-    :root {
-      --bezel: #202226;
-      --bezel-edge: #35383f;
-      --screen-bg: #f4f3ee;
-      --surface: #eceae2;
-      --text: #181818;
-      --muted: #66635b;
-      --border: #d4d0c5;
-      --primary: #1f2937;
-      --primary-text: #ffffff;
-      --pdf-filter: contrast(1.03) sepia(0.06);
-    }
-
-    [data-theme="eink-warm"] {
-      --screen-bg: #f3e6cc;
-      --surface: #ead8b7;
-      --text: #2c2115;
-      --muted: #766149;
-      --border: #d5bf98;
-      --primary: #5c4023;
-      --pdf-filter: sepia(0.32) brightness(0.97) contrast(1.04);
-    }
-
-    [data-theme="eink-night"] {
-      --screen-bg: #161616;
-      --surface: #222222;
-      --text: #d8d8d8;
-      --muted: #8a8a8a;
-      --border: #333333;
-      --primary: #475569;
-      --pdf-filter: invert(0.89) hue-rotate(180deg) contrast(1.04);
-    }
-
-    [data-theme="amoled"] {
-      --screen-bg: #000000;
-      --surface: #0d0d0d;
-      --text: #cfcfcf;
-      --muted: #737373;
-      --border: #242424;
-      --primary: #334155;
-      --pdf-filter: invert(0.94) hue-rotate(180deg) contrast(1.08);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #121316;
-      color: var(--text);
-      height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    .kindle-device {
-      width: 100%;
-      height: 100%;
-      background: var(--bezel);
-      display: flex;
-      flex-direction: column;
-      padding: 14px 16px 26px 16px;
-      border-radius: 18px;
-      box-shadow: inset 0 1px 2px rgba(255,255,255,0.12), 0 20px 50px rgba(0,0,0,0.7);
-      position: relative;
-      transition: padding 0.25s ease;
-    }
-
-    .kindle-device.no-bezel {
-      padding: 0;
-      border-radius: 0;
-    }
-
-    .kindle-brand {
-      text-align: center;
-      font-size: 0.72rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #6b7280;
-      padding-top: 8px;
-      font-weight: 600;
-    }
-    .kindle-device.no-bezel .kindle-brand { display: none; }
-
-    @media (max-width: 600px) {
-      .kindle-device { padding: 6px 6px 18px 6px; border-radius: 10px; }
-    }
-
-    .kindle-screen {
-      flex: 1;
-      background: var(--screen-bg);
-      border-radius: 6px;
-      border: 2px solid var(--bezel-edge);
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.12);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-    .kindle-device.no-bezel .kindle-screen { border: none; border-radius: 0; }
-
-    .hidden { display: none !important; }
-    .muted { font-size: 0.82rem; color: var(--muted); }
-
-    .topbar, .subbar, .bottom-hud {
-      background: var(--surface);
-      border-color: var(--border);
-      z-index: 25;
-      transition: transform 0.22s ease, opacity 0.22s ease;
-    }
-
-    .topbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .subbar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .hud-hidden .topbar,
-    .hud-hidden .bottom-hud {
-      opacity: 0;
-      pointer-events: none;
-      position: absolute;
-      left: 0;
-      right: 0;
-    }
-    .hud-hidden .topbar { top: 0; transform: translateY(-100%); }
-    .hud-hidden .bottom-hud { bottom: 0; transform: translateY(100%); }
-
-    .topbar-group { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
-
-    .btn {
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--screen-bg);
-      color: var(--text);
-      font-size: 0.84rem;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn.active, .btn-primary {
-      background: var(--primary);
-      color: var(--primary-text);
-      border-color: var(--primary);
-    }
-    .btn-danger { background: #b91c1c; color: #fff; border-color: #b91c1c; }
-
-    .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
-
-    .reader-container {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 16px;
-      position: relative;
-      -webkit-overflow-scrolling: touch;
-      perspective: 1400px;
-    }
-
-    .empty-state {
-      margin: auto;
-      text-align: center;
-      max-width: 400px;
-      background: var(--surface);
-      padding: 28px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .single-page-stage {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      transform-origin: left center;
-    }
-
-    .canvas-wrapper {
-      position: relative;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-      background: #fff;
-    }
-
-    .pdf-canvas { display: block; filter: var(--pdf-filter); }
-    .draw-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-    .draw-canvas.drawing-active { pointer-events: auto; touch-action: none; cursor: crosshair; }
-
-    .reflow-view {
-      width: 100%;
-      max-width: 720px;
-      padding: 12px 18px;
-      user-select: text;
-    }
-    .reflow-content {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 19px;
-      line-height: 1.75;
-    }
-    .reflow-content p { margin-bottom: 1.05em; text-align: justify; text-indent: 1.2em; }
-
-    .vertical-view {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      padding-bottom: 40px;
-    }
-
-    .v-page-slot {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      min-height: 360px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    }
-
-    .v-page-slot.reflow-slot {
-      width: 100%;
-      max-width: 720px;
-      min-height: 180px;
-      background: transparent;
-      border: none;
-      border-bottom: 1px dashed var(--border);
-      box-shadow: none;
-      padding: 16px 8px;
-      display: block;
-    }
-
-    .v-page-badge {
-      position: absolute;
-      top: 6px;
-      right: 8px;
-      font-size: 0.7rem;
-      background: rgba(0,0,0,0.45);
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 4px;
-      pointer-events: none;
-    }
-
-    @keyframes einkFlash {
-      0% { filter: invert(0.18) brightness(0.92); opacity: 0.75; }
-      50% { filter: invert(0.05); opacity: 0.9; }
-      100% { filter: none; opacity: 1; }
-    }
-    @keyframes slideFromRight {
-      from { opacity: 0.35; transform: translateX(48px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideFromLeft {
-      from { opacity: 0.35; transform: translateX(-48px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes curlNext {
-      from { opacity: 0.4; transform: rotateY(-18deg) translateX(35px); }
-      to { opacity: 1; transform: rotateY(0deg) translateX(0); }
-    }
-    @keyframes curlPrev {
-      from { opacity: 0.4; transform: rotateY(18deg) translateX(-35px); }
-      to { opacity: 1; transform: rotateY(0deg) translateX(0); }
-    }
-
-    .anim-eink { animation: einkFlash 0.24s ease-out; }
-    .anim-slide-next { animation: slideFromRight 0.24s ease-out; }
-    .anim-slide-prev { animation: slideFromLeft 0.24s ease-out; }
-    .anim-curl-next { animation: curlNext 0.32s ease-out; }
-    .anim-curl-prev { animation: curlPrev 0.32s ease-out; }
-
-    .tap-hint {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.8rem;
-      background: rgba(0,0,0,0.35);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 22;
-    }
-    .tap-hint.left { left: 16px; }
-    .tap-hint.right { right: 16px; }
-    .tap-hint.show { opacity: 1; }
-
-    .kindle-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 14px;
-      font-size: 0.76rem;
-      color: var(--muted);
-      background: var(--screen-bg);
-      border-top: 1px solid var(--border);
-      gap: 12px;
-    }
-
-    .kindle-progress-track {
-      flex: 1;
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .kindle-progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--text);
-      transition: width 0.2s;
-    }
-
-    .bottom-hud {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border-top: 1px solid var(--border);
-    }
-    .bottom-hud input[type="range"] { flex: 1; accent-color: var(--primary); }
-
-    .floating-panel {
-      position: absolute;
-      top: 56px;
-      right: 14px;
-      width: 295px;
-      max-width: calc(100% - 28px);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-      z-index: 35;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .floating-panel label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
-    .floating-panel select, .floating-panel input[type="range"] {
-      width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border);
-      background: var(--screen-bg); color: var(--text);
-    }
-    .checkbox-row {
-      flex-direction: row !important;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .notes-panel {
-      width: 310px;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      gap: 10px;
-      z-index: 22;
-    }
-    .notes-header { display: flex; justify-content: space-between; align-items: center; }
-    #noteTextarea {
-      flex: 1; width: 100%; resize: none; padding: 10px; border-radius: 8px;
-      border: 1px solid var(--border); background: var(--screen-bg); color: var(--text);
-      font-family: inherit; font-size: 0.94rem; line-height: 1.5;
-    }
-
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-      display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px;
-    }
-    .modal-content {
-      background: var(--surface); width: 100%; max-width: 480px; max-height: 80vh;
-      border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px;
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; }
-    .library-list { list-style: none; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .library-item {
-      display: flex; justify-content: space-between; align-items: center; gap: 8px;
-      padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--screen-bg);
-    }
-    .library-item-info { cursor: pointer; flex: 1; }
-    .library-item-info strong { display: block; font-size: 0.94rem; }
-
-    @media (max-width: 768px) {
-      .workspace { flex-direction: column; }
-      .notes-panel { width: 100%; height: 38vh; border-left: none; border-top: 1px solid var(--border); }
-    }
-  </style>
 </head>
 <body>
   <div id="kindleDevice" class="kindle-device">
     <div id="kindleScreen" class="kindle-screen">
-
       <header class="topbar">
         <div class="topbar-group">
           <button id="btnLibrary" class="btn">📚 Biblioteca</button>
@@ -481,7 +67,7 @@
           <button id="btnZoomOut" class="btn">🔍➖ Alejar</button>
           <button id="btnZoomIn" class="btn">🔍➕ Acercar</button>
         </div>
-        <p class="muted">Tip: Toca el centro de la hoja para ocultar o mostrar los menús.</p>
+        <p class="muted">Tip: Toca el centro de la hoja para ocultar o mostrar menús.</p>
       </aside>
 
       <aside id="stylePanel" class="floating-panel hidden">
@@ -536,13 +122,11 @@
         <section id="readerContainer" class="reader-container">
           <div id="tapHintLeft" class="tap-hint left">‹</div>
           <div id="tapHintRight" class="tap-hint right">›</div>
-
           <div id="emptyState" class="empty-state">
             <h2>AlfaReader Kindle</h2>
             <p>Sube un PDF y disfrútalo con interfaz tipo Kindle, ondas alfa y apuntes offline.</p>
             <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📂 Abrir PDF</button>
           </div>
-
           <div id="singleStage" class="single-page-stage hidden">
             <div id="originalView">
               <div class="canvas-wrapper">
@@ -554,7 +138,6 @@
               <div id="reflowContent" class="reflow-content"></div>
             </div>
           </div>
-
           <div id="verticalView" class="vertical-view hidden"></div>
         </section>
 
@@ -587,4 +170,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>📚 Biblioteca Kindle</h2>
-        <button id="btnCloseLibrary" 
+        <button id="btnCloseLibrary" class="btn">✖</button>
+      </div>
+      <ul id="libraryList" class="library-list"></ul>
+    </div>
+  </div>
+
+  <script src="reader.js"></script>
+  <script src="tools.js"></script>
+</body>
+</html>
