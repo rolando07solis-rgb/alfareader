@@ -1,0 +1,17 @@
+{
+  "name": "AlfaReader - Lector PDF",
+  "short_name": "AlfaReader",
+  "description": "Lector PDF offline con interfaz Kindle, ondas alfa y apuntes.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121316",
+  "theme_color": "#1c1e22",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
